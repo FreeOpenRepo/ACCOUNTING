@@ -1,0 +1,69 @@
+# 02_ACCOUNTING_ENGINE: Enterprise Double-Entry Accounting Engine
+
+ระบบบัญชีคู่ (Double-Entry General Ledger) ระดับองค์กร ออกแบบตามมาตรฐานการบัญชีสากล พร้อมระบบบันทึกสมุดบัญชีแยกประเภทแบบ Immutable (ห้ามลบเด็ดขาด) และเครื่องมือสร้างใบกำกับภาษี/ใบเสร็จรับเงิน PDF/A มาตรฐานกรมสรรพากร
+
+---
+
+## 🔄 ภาพรวม Workflow การทำงาน (Business & Technical Workflow)
+
+```mermaid
+flowchart TD
+    Accountant["💼 Accountant (นักบัญชี)\nสร้างใบแจ้งหนี้ / ใบกำกับภาษี"] -->|1. DRAFT -> POSTED\nPostInvoiceCommand| Validator["⚖️ ตรวจสอบ Invariant\nStrictDebitCreditEquality"]
+    Validator -->|Sum(Debit) == Sum(Credit)| Ledger["📒 Partitioned General Ledger\nบันทึกรายการบัญชีแยกประเภท (Append-Only)"]
+    Validator -->|Sum(Debit) != Sum(Credit)| Reject["❌ ปฏิเสธการบันทึก (Reject)"]
+    Ledger --> PDFEngine["📄 QuestPDF Engine\nเรนเดอร์เอกสารใบกำกับภาษี PDF/A แบบ 2 ภาษา"]
+    
+    Accountant -->|2. POSTED -> REVERSED\nReverseInvoiceCommand| Reversal["🔄 กลับรายการ (Reversal)\nLedgerImmutabilityNoHardDelete"]
+    Reversal -->|สร้าง Counter-Entry สลับฝั่ง Dr/Cr| Ledger
+    
+    Auditor["🔍 Auditor (ผู้ตรวจสอบบัญชี)"] -->|ตรวจสอบความถูกต้อง| TrialBalance["📊 งบทดลอง (Trial Balance)\n& สมุดรายวันทั่วไป (Journal Entries)"]
+```
+
+### รายละเอียดขั้นตอนการเปลี่ยนสถานะ (State Transitions):
+1. **`DRAFT ➔ POSTED` (Trigger: `POST_INVOICE`)**:
+   - นักบัญชีกรอกรายการใบแจ้งหนี้และบัญชีคู่ (ลูกหนี้การค้า, รายได้จากการขาย, ภาษีขาย)
+   - ระบบตรวจสอบความสมดุลของเดบิตและเครดิต
+   - บันทึกลงสมุดบัญชีแยกประเภท (General Ledger) ทันที และออกไฟล์ใบกำกับภาษี PDF
+2. **`POSTED ➔ REVERSED` (Trigger: `REVERSE_INVOICE`)**:
+   - เมื่อต้องการยกเลิกใบแจ้งหนี้ ระบบ**จะไม่ทำการลบแถวเดิมออกจากฐานข้อมูล (No Hard Delete)**
+   - ระบบจะสร้างรายการบันทึกบัญชีย้อนกลับ (Counter-Entry) โดยสลับฝั่งเดบิตและเครดิต พร้อมระบุเหตุผลในการกลับรายการ เพื่อให้สามารถตรวจสอบเส้นทางการเงิน (Audit Trail) ได้อย่างโปร่งใส
+
+---
+
+## 🛡️ กฎเหล็กของระบบ (Domain Invariants)
+
+1. **`StrictDebitCreditEquality` (ยอดรวมเดบิตต้องเท่ากับเครดิตเสมอ)**:
+   - ทุกรายการ Journal Entry ต้องสอดคล้องกับสมการ `Sum(Dr) == Sum(Cr)` แบบ 100% ทศนิยมแม่นยำ หากมีส่วนต่างแม้แต่ 0.01 บาท ระบบจะไม่อนุญาตให้ Commit ลงบัญชี
+2. **`LedgerImmutabilityNoHardDelete` (สมุดบัญชีแยกประเภทเป็นแบบ Append-Only)**:
+   - เมื่อรายการถูกบันทึกเข้าสู่ General Ledger แล้ว ข้อมูลจะถูกล็อกเป็นประวัติศาสตร์ถาวร ไม่มีการรันคำสั่ง `DELETE` หรือ `UPDATE` ในตาราง Ledger การแก้ไขทำได้ผ่านการออกใบลดหนี้หรือการกลับรายการ (Reversal Entry) เท่านั้น
+
+---
+
+## 💻 Tech Stack & เหตุผลในการเลือกใช้
+
+| ส่วนประกอบ | เทคโนโลยีที่เลือก | เหตุผลที่เลือก | ข้อดีหลัก (Advantages) |
+|---|---|---|---|
+| **Frontend UI** | **Next.js 16 + React 19** | ระบบหน้าบ้านที่ทรงพลัง รองรับ React Server Components | โหลดหน้าเร็ว ปลอดภัย และจัดการ State ซับซ้อนได้ดีเยี่ยม |
+| **Data Grid Table** | **TanStack Table v8** | Headless UI Data Table ที่ยืดหยุ่นและเร็วที่สุด | รองรับการค้นหา กรอง และเรียงลำดับสมุดบัญชีแยกประเภทนับแสนรายการได้อย่างลื่นไหล |
+| **Financial Math** | **decimal.js** | ไลบรารีคำนวณตัวเลขทศนิยมแม่นยำสูง ป้องกัน Floating Point Error | ป้องกันปัญหาเศษสตางค์คลาดเคลื่อน (เช่น `0.1 + 0.2 = 0.30000000000000004`) |
+| **Backend API** | **.NET 10 (C#)** | ประสิทธิภาพสูง รองรับ Decimal 128-bit ในตัว | มีความแม่นยำทางคณิตศาสตร์สูงสุด และจัดการ Transaction ข้ามตารางได้อย่างสมบูรณ์ |
+| **Architecture** | **MediatR (CQRS)** | แยก Command และ Query ชัดเจนตามหลัก Clean Architecture | โค้ดขยายต่อได้ง่าย แยก Business Logic ของการ Post / Reverse ออกจาก Controller |
+| **PDF Generation** | **QuestPDF 2025** | เอนจินสร้างเอกสาร PDF แบบ Code-first (C# Fluent API) | เรนเดอร์ PDF ได้เร็วกว่า HTML-to-PDF ถึง 10 เท่า เอกสารคมชัดระดับ Vector รองรับภาษาไทยสมบูรณ์ |
+
+---
+
+## 🚀 วิธีการรันระบบ (Quick Start)
+
+### 1. รัน Backend API:
+```powershell
+cd accounting-api
+dotnet run
+```
+> API พร้อมทำงานที่: `http://localhost:5010`
+
+### 2. รัน Frontend Web:
+```powershell
+cd accounting-web
+bun run dev
+```
+> เข้าใช้งานได้ที่: `http://localhost:3001`
