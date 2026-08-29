@@ -8,15 +8,15 @@
 
 ```mermaid
 flowchart TD
-    Accountant["💼 Accountant (นักบัญชี)\nสร้างใบแจ้งหนี้ / ใบกำกับภาษี"] -->|1. DRAFT -> POSTED\nPostInvoiceCommand| Validator["⚖️ ตรวจสอบ Invariant\nStrictDebitCreditEquality"]
-    Validator -->|Sum(Debit) == Sum(Credit)| Ledger["📒 Partitioned General Ledger\nบันทึกรายการบัญชีแยกประเภท (Append-Only)"]
-    Validator -->|Sum(Debit) != Sum(Credit)| Reject["❌ ปฏิเสธการบันทึก (Reject)"]
-    Ledger --> PDFEngine["📄 QuestPDF Engine\nเรนเดอร์เอกสารใบกำกับภาษี PDF/A แบบ 2 ภาษา"]
+    Accountant["Accountant (นักบัญชี)<br/>สร้างใบแจ้งหนี้ / ใบกำกับภาษี"] -->|"1. Post Invoice (DRAFT to POSTED)"| Validator["Validation Engine<br/>StrictDebitCreditEquality"]
+    Validator -->|"Sum Debit == Sum Credit"| Ledger["Partitioned General Ledger<br/>บันทึกรายการบัญชีแยกประเภท (Append-Only)"]
+    Validator -->|"Sum Debit != Sum Credit"| Reject["Reject (ปฏิเสธการบันทึก)"]
+    Ledger --> PDFEngine["QuestPDF Engine<br/>เรนเดอร์เอกสารใบกำกับภาษี PDF/A แบบ 2 ภาษา"]
     
-    Accountant -->|2. POSTED -> REVERSED\nReverseInvoiceCommand| Reversal["🔄 กลับรายการ (Reversal)\nLedgerImmutabilityNoHardDelete"]
-    Reversal -->|สร้าง Counter-Entry สลับฝั่ง Dr/Cr| Ledger
+    Accountant -->|"2. Reverse Invoice (POSTED to REVERSED)"| Reversal["Reversal Engine<br/>LedgerImmutabilityNoHardDelete"]
+    Reversal -->|"สร้าง Counter-Entry สลับฝั่ง Dr/Cr"| Ledger
     
-    Auditor["🔍 Auditor (ผู้ตรวจสอบบัญชี)"] -->|ตรวจสอบความถูกต้อง| TrialBalance["📊 งบทดลอง (Trial Balance)\n& สมุดรายวันทั่วไป (Journal Entries)"]
+    Auditor["Auditor (ผู้ตรวจสอบบัญชี)"] -->|"ตรวจสอบความถูกต้อง"| TrialBalance["Trial Balance (งบทดลอง)<br/>และ General Journal Entries"]
 ```
 
 ### รายละเอียดขั้นตอนการเปลี่ยนสถานะ (State Transitions):
