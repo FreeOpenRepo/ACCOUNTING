@@ -6,10 +6,10 @@ import { fetchInvoices, fetchAccounts, createInvoice, postInvoice, reverseInvoic
 import { 
   Plus, FileText, CheckCircle2, RotateCcw, AlertTriangle, 
   ArrowRight, DollarSign, Calendar, Sparkles, X, Eye, 
-  Building2, Hash, Percent, Layers 
+  Building2, Hash, Percent, Layers, Trash2, Calculator, Download 
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { showSuccess, showError, showยืนยัน } from '@/lib/swal';
+import { showSuccess, showError, showConfirm } from '@/lib/swal';
 
 export default function AccountantView() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -97,7 +97,7 @@ export default function AccountantView() {
   }
 
   async function handlePostInvoice(invoice: Invoice) {
-    const confirmed = await showยืนยัน(
+    const confirmed = await showConfirm(
       'ยืนยันการ Post Invoice?',
       `ใบแจ้งหนี้ #${invoice.invoiceNumber} จะถูกบันทึกบัญชีแยกประเภททั่วไป (Dr/Cr) ถาวรตาม Invariant`,
       'ยืนยัน Post'
@@ -479,5 +479,6 @@ export default function AccountantView() {
     </div>
   );
 }
+
 
 

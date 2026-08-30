@@ -12,6 +12,8 @@ RUN dotnet publish "accounting-api.csproj" -c Release -o /app/publish /p:UseAppH
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-ENV ASPNETCORE_URLS=http://+:5010
+ENV ASPNETCORE_URLS=http://0.0.0.0:5010
+ENV ASPNETCORE_HTTP_PORTS=5010
 EXPOSE 5010
 ENTRYPOINT ["dotnet", "accounting-api.dll"]
+
