@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Invoice, Account, InvoiceItem } from '@/lib/types';
-import { fetchInvoices, fetchAccounts, createInvoice, postInvoice, reverseInvoice, getInvoicePdfUrl, calculateInvoiceยอดรวมs } from '@/lib/api';
+import { fetchInvoices, fetchAccounts, createInvoice, postInvoice, reverseInvoice, getInvoicePdfUrl, calculateInvoiceTotals } from '@/lib/api';
 import { 
   Plus, FileText, CheckCircle2, RotateCcw, AlertTriangle, 
   ArrowRight, DollarSign, Calendar, Sparkles, X, Eye, 
@@ -62,7 +62,7 @@ export default function AccountantView() {
     });
   }
 
-  const { subtotal, vatAmount, totalAmount } = calculateInvoiceยอดรวมs(items);
+  const { subtotal, vatAmount, totalAmount } = calculateInvoiceTotals(items);
 
   async function handleCreateInvoiceSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -479,4 +479,5 @@ export default function AccountantView() {
     </div>
   );
 }
+
 
