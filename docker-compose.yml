@@ -7,7 +7,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=accounting_db
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - accounting_postgres_data:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
