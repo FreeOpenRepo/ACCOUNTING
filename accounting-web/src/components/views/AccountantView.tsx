@@ -3,8 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { Invoice, Account, InvoiceItem } from '@/lib/types';
 import { fetchInvoices, fetchAccounts, createInvoice, postInvoice, reverseInvoice, getInvoicePdfUrl, calculateInvoiceTotals } from '@/lib/api';
-import { Plus, FileText, CheckCircle2, RotateCcw, AlertTriangle, Download, X, Eye, Calculator, Sparkles, Building, Trash2 } from 'lucide-react';
+import { 
+  Plus, FileText, CheckCircle2, RotateCcw, AlertTriangle, 
+  ArrowRight, DollarSign, Calendar, Sparkles, X, Eye, 
+  Building2, Hash, Percent, Layers 
+} from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { showSuccess, showError, showConfirm } from '@/lib/swal';
 
 export default function AccountantView() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -75,8 +80,9 @@ export default function AccountantView() {
       resetForm();
       await loadData();
       confetti({ particleCount: 50, spread: 60 });
+      showSuccess('สร้างใบแจ้งหนี้สำเร็จ', 'สร้าง Draft Invoice และผูกรายการเรียบร้อยแล้ว');
     } catch (err: any) {
-      alert('Error creating invoice: ' + err.message);
+      showError('ไม่สามารถสร้างใบแจ้งหนี้ได้', err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -91,13 +97,21 @@ export default function AccountantView() {
   }
 
   async function handlePostInvoice(invoice: Invoice) {
+    const confirmed = await showConfirm(
+      'ยืนยันการ Post Invoice?',
+      `ใบแจ้งหนี้ #${invoice.invoiceNumber} จะถูกบันทึกบัญชีแยกประเภททั่วไป (Dr/Cr) ถาวรตาม Invariant`,
+      'ยืนยัน Post'
+    );
+    if (!confirmed) return;
+
     try {
       const result = await postInvoice(invoice.id);
       confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
       await loadData();
       setSelectedInvoiceForPdf(result.invoice);
+      showSuccess('Post บัญชีสำเร็จ!', `บันทึก Journal Entry ลงในบัญชีแยกประเภทสมบูรณ์แล้ว`);
     } catch (err: any) {
-      alert('Post failed: ' + err.message);
+      showError('ไม่สามารถ Post บัญชีได้', err.message);
     }
   }
 
@@ -110,8 +124,9 @@ export default function AccountantView() {
       setInvoiceToReverse(null);
       setReversalReason('');
       await loadData();
+      showSuccess('กลับรายการ (Reversal) สำเร็จ', 'สร้าง Reversing Journal Entry เพื่อหักล้างยอดเดิมเรียบร้อยแล้ว');
     } catch (err: any) {
-      alert('Reversal failed: ' + err.message);
+      showError('ไม่สามารถกลับรายการได้', err.message);
     } finally {
       setIsSubmitting(false);
     }
