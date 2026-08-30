@@ -1,0 +1,33 @@
+services:
+  accounting-api:
+    build:
+      context: ./accounting-api
+      dockerfile: Dockerfile
+    container_name: accounting-api
+    ports:
+      - "5010:5010"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5010
+    restart: unless-stopped
+    networks:
+      - accounting-network
+
+  accounting-web:
+    build:
+      context: ./accounting-web
+      dockerfile: Dockerfile
+    container_name: accounting-web
+    ports:
+      - "3001:3001"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5010
+    depends_on:
+      - accounting-api
+    restart: unless-stopped
+    networks:
+      - accounting-network
+
+networks:
+  accounting-network:
+    driver: bridge
