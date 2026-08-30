@@ -6,6 +6,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseUrls("http://0.0.0.0:5010");
 
 // Add services
 builder.Services.AddOpenApi();
@@ -271,3 +272,4 @@ public record CreateInvoiceDto(
     List<CreateInvoiceItemDto> Items
 );
 public record ReverseDto(string Reason);
+
