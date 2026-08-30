@@ -1,4 +1,25 @@
 services:
+  accounting-db:
+    image: postgres:18-alpine
+    container_name: accounting-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=accounting_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - accounting_postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d accounting_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - accounting-network
+
   accounting-api:
     build:
       context: ./accounting-api
@@ -9,6 +30,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5010
+      - ConnectionStrings__PostgresConnection=Host=accounting-db;Port=5432;Database=accounting_db;Username=postgres;Password=postgres
+    depends_on:
+      accounting-db:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - accounting-network
@@ -27,6 +52,9 @@ services:
     restart: unless-stopped
     networks:
       - accounting-network
+
+volumes:
+  accounting_postgres_data:
 
 networks:
   accounting-network:
