@@ -40,12 +40,26 @@ else
 
 var app = builder.Build();
 
-// Ensure Database is Created & Seeded
-using (var scope = app.Services.CreateScope())
+// Ensure Database is Created & Seeded asynchronously without blocking Kestrel startup
+app.Lifetime.ApplicationStarted.Register(async () =>
 {
-    var db = scope.ServiceProvider.GetRequiredService<AccountingDbContext>();
-    db.Database.EnsureCreated();
-}
+    for (int i = 0; i < 5; i++)
+    {
+        try
+        {
+            using var scope = app.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AccountingDbContext>();
+            await db.Database.EnsureCreatedAsync();
+            app.Logger.LogInformation("Database connected and verified successfully.");
+            break;
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogWarning("Database initialization attempt {Attempt} failed: {Message}. Retrying...", i + 1, ex.Message);
+            await Task.Delay(2000);
+        }
+    }
+});
 
 app.UseCors();
 
@@ -272,4 +286,5 @@ public record CreateInvoiceDto(
     List<CreateInvoiceItemDto> Items
 );
 public record ReverseDto(string Reason);
+
 
