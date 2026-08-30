@@ -49,22 +49,22 @@ export default function AuditorView() {
   const ledgerColumns = useMemo<ColumnDef<LedgerEntry>[]>(() => [
     {
       accessorKey: 'entryDate',
-      header: 'Entry Date',
+      header: 'วันที่บันทึก',
       cell: info => <span className="font-mono text-sm">{new Date(info.getValue<string>()).toLocaleDateString()}</span>,
     },
     {
       accessorKey: 'accountCode',
-      header: 'Account Code',
+      header: 'รหัสบัญชี',
       cell: info => <span className="font-mono font-bold text-cyan-400" style={{ color: 'var(--accent-cyan)' }}>{info.getValue<string>()}</span>,
     },
     {
       accessorKey: 'accountName',
-      header: 'Account Name',
+      header: 'ชื่อบัญชี',
       cell: info => <span style={{ fontWeight: 600 }}>{info.getValue<string>()}</span>,
     },
     {
       accessorKey: 'debit',
-      header: 'Debit (Dr)',
+      header: 'เดบิต (Dr.)',
       cell: info => {
         const val = info.getValue<number>();
         return val > 0 ? (
@@ -78,7 +78,7 @@ export default function AuditorView() {
     },
     {
       accessorKey: 'credit',
-      header: 'Credit (Cr)',
+      header: 'เครดิต (Cr.)',
       cell: info => {
         const val = info.getValue<number>();
         return val > 0 ? (
@@ -92,12 +92,12 @@ export default function AuditorView() {
     },
     {
       accessorKey: 'reference',
-      header: 'Reference',
+      header: 'อ้างอิง',
       cell: info => <span className="font-mono" style={{ fontSize: '0.85rem' }}>{info.getValue<string>()}</span>,
     },
     {
       accessorKey: 'description',
-      header: 'Description',
+      header: 'คำอธิบายรายการ',
       cell: info => <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{info.getValue<string>()}</span>,
     },
     {
@@ -193,7 +193,7 @@ export default function AuditorView() {
             <div>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Partitioned General Ledger</h2>
               <span style={{ fontSize: '0.8rem', color: 'var(--accent-emerald)', fontWeight: 600 }}>
-                🛡️ Guaranteed Invariant: LedgerImmutabilityNoHardDelete
+                🛡️ Guaranteed Invariant: LedgerImmutabilityNoHardลบ
               </span>
             </div>
 
@@ -445,3 +445,4 @@ export default function AuditorView() {
     </div>
   );
 }
+

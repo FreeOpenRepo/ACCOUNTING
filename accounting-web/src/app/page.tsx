@@ -74,8 +74,8 @@ export default function Home() {
             gap: '4px'
           }}>
             {[
-              { role: 'Accountant' as const, label: 'Accountant (Invoices & Billing)', icon: FileText, color: 'var(--accent-cyan)' },
-              { role: 'Auditor' as const, label: 'Auditor (Ledger & Trial Balance)', icon: ShieldCheck, color: 'var(--accent-purple)' },
+              { role: 'Accountant' as const, label: 'นักบัญชี (ใบแจ้งหนี้ & บิล)', icon: FileText, color: 'var(--accent-cyan)' },
+              { role: 'Auditor' as const, label: 'ผู้ตรวจสอบบัญชี (สมุดรายวัน & งบทดลอง)', icon: ShieldCheck, color: 'var(--accent-purple)' },
             ].map(tab => {
               const Icon = tab.icon;
               const isActive = activeRole === tab.role;
@@ -120,7 +120,7 @@ export default function Home() {
             color: isApiOnline ? '#34d399' : '#fca5a5'
           }}>
             {isApiOnline ? <Wifi style={{ width: 12, height: 12 }} /> : <WifiOff style={{ width: 12, height: 12 }} />}
-            <span>{isApiOnline ? 'Accounting API Active' : 'Connecting API :5010...'}</span>
+            <span>{isApiOnline ? 'Accounting API ออนไลน์' : 'กำลังเชื่อมต่อ API :5010...'}</span>
           </div>
         </div>
       </header>

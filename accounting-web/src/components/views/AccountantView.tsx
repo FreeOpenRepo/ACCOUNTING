@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { Invoice, Account, InvoiceItem } from '@/lib/types';
-import { fetchInvoices, fetchAccounts, createInvoice, postInvoice, reverseInvoice, getInvoicePdfUrl, calculateInvoiceTotals } from '@/lib/api';
+import { fetchInvoices, fetchAccounts, createInvoice, postInvoice, reverseInvoice, getInvoicePdfUrl, calculateInvoiceยอดรวมs } from '@/lib/api';
 import { 
   Plus, FileText, CheckCircle2, RotateCcw, AlertTriangle, 
   ArrowRight, DollarSign, Calendar, Sparkles, X, Eye, 
   Building2, Hash, Percent, Layers 
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { showSuccess, showError, showConfirm } from '@/lib/swal';
+import { showSuccess, showError, showยืนยัน } from '@/lib/swal';
 
 export default function AccountantView() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -62,7 +62,7 @@ export default function AccountantView() {
     });
   }
 
-  const { subtotal, vatAmount, totalAmount } = calculateInvoiceTotals(items);
+  const { subtotal, vatAmount, totalAmount } = calculateInvoiceยอดรวมs(items);
 
   async function handleCreateInvoiceSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -97,7 +97,7 @@ export default function AccountantView() {
   }
 
   async function handlePostInvoice(invoice: Invoice) {
-    const confirmed = await showConfirm(
+    const confirmed = await showยืนยัน(
       'ยืนยันการ Post Invoice?',
       `ใบแจ้งหนี้ #${invoice.invoiceNumber} จะถูกบันทึกบัญชีแยกประเภททั่วไป (Dr/Cr) ถาวรตาม Invariant`,
       'ยืนยัน Post'
@@ -139,10 +139,10 @@ export default function AccountantView() {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <FileText style={{ color: 'var(--accent-cyan)', width: 26, height: 26 }} />
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Accountant Billing & Invoices</h1>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>ระบบออกใบกำกับภาษี & ใบแจ้งหนี้ (Billing & Invoices)</h1>
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '4px' }}>
-            Tax Invoice Management • Double-entry validation [Sum(Dr) == Sum(Cr)] • QuestPDF Streaming
+            จัดการใบกำกับภาษี • ตรวจสอบความถูกต้องบัญชีคู่ [เดบิต = เครดิต] • สร้างไฟล์เอกสาร QuestPDF
           </p>
         </div>
 
@@ -151,14 +151,14 @@ export default function AccountantView() {
           className="btn-primary"
           style={{ padding: '12px 20px', fontSize: '0.95rem' }}
         >
-          <Plus style={{ width: 18, height: 18 }} /> Create Tax Invoice
+          <Plus style={{ width: 18, height: 18 }} /> + ออกใบกำกับภาษีใหม่
         </button>
       </div>
 
       {/* Invoices List Table */}
       <div className="glass-panel" style={{ padding: '24px' }}>
         <h2 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '16px' }}>
-          Customer Tax Invoices ({invoices.length})
+          ทะเบียนใบกำกับภาษีทั้งหมด ({invoices.length})
         </h2>
 
         <div style={{ overflowX: 'auto' }}>
@@ -170,9 +170,9 @@ export default function AccountantView() {
                 <th style={{ padding: '12px 14px' }}>Issue Date</th>
                 <th style={{ padding: '12px 14px' }}>Subtotal</th>
                 <th style={{ padding: '12px 14px' }}>VAT 7%</th>
-                <th style={{ padding: '12px 14px' }}>Total Due</th>
-                <th style={{ padding: '12px 14px' }}>Status</th>
-                <th style={{ padding: '12px 14px', textAlign: 'right' }}>Actions</th>
+                <th style={{ padding: '12px 14px' }}>ยอดรวม Due</th>
+                <th style={{ padding: '12px 14px' }}>สถานะ</th>
+                <th style={{ padding: '12px 14px', textAlign: 'right' }}>การดำเนินการ</th>
               </tr>
             </thead>
             <tbody>
@@ -263,7 +263,7 @@ export default function AccountantView() {
         </div>
       </div>
 
-      {/* Create New Tax Invoice Modal */}
+      {/* สร้างใหม่ Tax Invoice Modal */}
       {isCreateModalOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
           <div className="glass-panel" style={{ maxWidth: '800px', width: '100%', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -386,7 +386,7 @@ export default function AccountantView() {
 
               <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.3)' }}>
                 <div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Grand Total Due</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Grand ยอดรวม Due</div>
                   <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--accent-emerald)' }} className="font-mono">
                     {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })} THB
                   </div>
@@ -394,7 +394,7 @@ export default function AccountantView() {
 
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button type="button" onClick={() => setIsCreateModalOpen(false)} className="btn-secondary">
-                    Cancel
+                    ยกเลิก
                   </button>
                   <button type="submit" disabled={isSubmitting} className="btn-primary">
                     {isSubmitting ? 'Saving...' : 'Save Draft Invoice'}
@@ -416,7 +416,7 @@ export default function AccountantView() {
             </div>
 
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '14px' }}>
-              Reversing invoice <strong>{invoiceToReverse.invoiceNumber}</strong> will create an immutable Counter-Entry in the General Ledger (swapping debits and credits) pursuant to invariant <strong>LedgerImmutabilityNoHardDelete</strong>.
+              Reversing invoice <strong>{invoiceToReverse.invoiceNumber}</strong> will create an immutable Counter-Entry in the General Ledger (swapping debits and credits) pursuant to invariant <strong>LedgerImmutabilityNoHardลบ</strong>.
             </p>
 
             <div style={{ marginBottom: '18px' }}>
@@ -432,9 +432,9 @@ export default function AccountantView() {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-              <button onClick={() => setIsReverseModalOpen(false)} className="btn-secondary">Cancel</button>
+              <button onClick={() => setIsReverseModalOpen(false)} className="btn-secondary">ยกเลิก</button>
               <button onClick={handleReverseSubmit} disabled={isSubmitting || !reversalReason} className="btn-danger">
-                {isSubmitting ? 'Reversing...' : 'Confirm Reversal'}
+                {isSubmitting ? 'Reversing...' : 'ยืนยัน Reversal'}
               </button>
             </div>
           </div>
@@ -458,7 +458,7 @@ export default function AccountantView() {
                   className="btn-primary"
                   style={{ textDecoration: 'none', padding: '8px 14px', fontSize: '0.85rem' }}
                 >
-                  <Download style={{ width: 16, height: 16 }} /> Download PDF
+                  <Download style={{ width: 16, height: 16 }} /> ดาวน์โหลด PDF
                 </a>
                 <button onClick={() => setSelectedInvoiceForPdf(null)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>
                   <X style={{ width: 22, height: 22 }} />
@@ -479,3 +479,4 @@ export default function AccountantView() {
     </div>
   );
 }
+
